@@ -12,7 +12,7 @@ export Vagrant_IP=$IPADD
 printf "IP Address to access project: $Vagrant_IP"
 
 # Install phalcon template
-printf "${YELLOW}Do you want to install a basic phalcon template? ${LGRAY}(y/n) ${NC}"
+printf "\n${YELLOW}Do you want to install a basic phalcon template? ${LGRAY}(y/n) ${NC}"
 read PHALCON_TEMPLATE
 
 if [ "$PHALCON_TEMPLATE" == "y" ]
@@ -83,16 +83,18 @@ then
     mkdir app/controllers
     mkdir app/models
     mkdir app/views
-    mkdir cache
-    mkdir cache/volt
     mkdir public
+    mkdir public/assets
     mv assets/* public/assets/
-    cp ../../provisions/phalcon_outer_htaccess /.htaccess
-    cp ../../provisions/phalcon_inner_htaccess /public/.htaccess
-    cp ../../provisions/phalcon_public_index /public/index.php
+    cp ../../provisions/phalcon_outer_htaccess .
+    cp ../../provisions/phalcon_inner_htaccess public/
+    cp ../../provisions/phalcon_public_index.php public/
+    mv phalcon_outer_htaccess .htaccess
+    mv public/{phalcon_inner_htaccess,.htaccess}
+    mv public/{phalcon_public_index.php,index.php}
 
     # remove old folders created by Zurb
-    rm -rf -- data layouts pages partials styleguide
+    rm -rf -- data layouts pages partials styleguide assets
 
     # Install es6 promise pollyfill
     npm install -y es6-promise
@@ -104,13 +106,17 @@ then
     mkdir app/models
     mkdir app/views
     mkdir public
+    mkdir public/assets
     mv assets/* public/assets/
-    cp ../../provisions/phalcon_outer_htaccess /.htaccess
-    cp ../../provisions/phalcon_inner_htaccess /public/.htaccess
-    cp ../../provisions/phalcon_public_index /public/index.php
+    cp ../../provisions/phalcon_outer_htaccess .
+    cp ../../provisions/phalcon_inner_htaccess public/
+    cp ../../provisions/phalcon_public_index.php public/
+    mv phalcon_outer_htaccess .htaccess
+    mv public/{phalcon_inner_htaccess,.htaccess}
+    mv public/{phalcon_public_index.php,index.php}
 
     # remove old folders created by Zurb
-    rm -rf -- data layouts pages partials styleguide
+    rm -rf -- data layouts pages partials styleguide assets
 
     # Install es6 promise pollyfill
     npm install -y es6-promise
