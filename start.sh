@@ -5,14 +5,24 @@ source provisions/bash_settings.sh
 clear
 
 
-
+# Select project IP Address
 printf "${YELLOW}Enter an IP address to use to access your project? ${LGRAY}(eg: 10.0.0.10) ${NC}"
 read IPADD
-
 export Vagrant_IP=$IPADD
+printf "IP Address to access project: $Vagrant_IP"
 
+# Install phalcon template
+printf "${YELLOW}Do you want to install a basic phalcon template? ${LGRAY}(y/n) ${NC}"
+read PHALCON_TEMPLATE
 
-echo $Vagrant_IP 
+if [ "$PHALCON_TEMPLATE" == "y" ]
+then
+
+  # Template use volt
+  printf "${YELLOW}Do you want the template to use .volt template language? ${LGRAY}(y/n) ${NC}"
+  read PHALCON_VOLT
+
+fi
 
 
 printf "${YELLOW}Do you want to install zurb foundation? ${LGRAY}(y/n) ${NC}"
@@ -61,12 +71,50 @@ then
 fi
 
 
-# # Install and setup Zurb Foundation
-# printf "\n\n${BLUE}Installing Zurb Foundation\n${NC}"
-# printf "${YELLOW}Project name?\n"
-# read PROJECT_NAME 
-# printf "${NC}"
-# foundation new $PROJECT_NAME
-# expect "? What are you building today?" { send "\r" }
-# expect "? What's the project called? (no spaces)" { send "${PROJECT_NAME}\r" }
-# expect "? Which template would you like to use? (Use arrow keys)" { send "\c[[B\r" }
+
+
+if [ "$PHALCON_TEMPLATE" == "y" ]
+then
+  if [ "$PHALCON_VOLT" == "y" ]
+  then
+    # Create phalcon directorys in zurb project src folder
+    cd $PROJECT_NAME/src
+    mkdir app
+    mkdir app/controllers
+    mkdir app/models
+    mkdir app/views
+    mkdir cache
+    mkdir cache/volt
+    mkdir public
+    mv assets/* public/assets/
+    cp ../../provisions/phalcon_outer_htaccess /.htaccess
+    cp ../../provisions/phalcon_inner_htaccess /public/.htaccess
+    cp ../../provisions/phalcon_public_index /public/index.php
+
+    # remove old folders created by Zurb
+    rm -rf -- data layouts pages partials styleguide
+
+    # Install es6 promise pollyfill
+    npm install -y es6-promise
+  else
+    # Create phalcon directorys in zurb project src folder
+    cd $PROJECT_NAME/src
+    mkdir app
+    mkdir app/controllers
+    mkdir app/models
+    mkdir app/views
+    mkdir public
+    mv assets/* public/assets/
+    cp ../../provisions/phalcon_outer_htaccess /.htaccess
+    cp ../../provisions/phalcon_inner_htaccess /public/.htaccess
+    cp ../../provisions/phalcon_public_index /public/index.php
+
+    # remove old folders created by Zurb
+    rm -rf -- data layouts pages partials styleguide
+
+    # Install es6 promise pollyfill
+    npm install -y es6-promise
+  fi
+fi
+
+
