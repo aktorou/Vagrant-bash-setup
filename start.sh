@@ -101,19 +101,25 @@ then
   else
     # Create phalcon directorys in zurb project src folder
     cd $PROJECT_NAME/src
-    mkdir app
-    mkdir app/controllers
-    mkdir app/models
-    mkdir app/views
-    mkdir public
-    mkdir public/assets
-    mv assets/* public/assets/
-    cp ../../provisions/phalcon_outer_htaccess .
-    cp ../../provisions/phalcon_inner_htaccess public/
-    cp ../../provisions/phalcon_public_index.php public/
-    mv phalcon_outer_htaccess .htaccess
-    mv public/{phalcon_inner_htaccess,.htaccess}
-    mv public/{phalcon_public_index.php,index.php}
+    # mkdir app
+    # mkdir app/controllers
+    # mkdir app/models
+    # mkdir app/views
+    # mkdir public
+    # mkdir public/assets
+
+
+    # cp ../../provisions/phalcon-phtml.zip .
+    unzip ../../provisions/phalcon-phtml.zip -d .
+    mkdir -p public/assets/; mv assets/* $_
+    yes | cp -rf ../../provisions/gulpfile.babel.js ../
+    # mv assets/* public/assets/
+    # cp ../../provisions/phalcon_outer_htaccess .
+    # cp ../../provisions/phalcon_inner_htaccess public/
+    # cp ../../provisions/phalcon_public_index.php public/
+    # mv phalcon_outer_htaccess .htaccess
+    # mv public/{phalcon_inner_htaccess,.htaccess}
+    # mv public/{phalcon_public_index.php,index.php}
 
     # remove old folders created by Zurb
     rm -rf -- data layouts pages partials styleguide assets

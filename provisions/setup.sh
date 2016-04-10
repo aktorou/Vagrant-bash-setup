@@ -11,7 +11,7 @@ NC='\033[0m' # No Color
 
 pass='root' #preset password
 
-# source ~/../../vagrant/bash_settings.sh
+source /vagrant/provisions/bash_settings.sh
 
 # Update Ubuntu
 printf "\n\n${BLUE}----- Provision: Updating Ubuntu...${NC}\n\n"
@@ -31,10 +31,11 @@ a2dissite 000-default.conf
 
 # Link my shared folder to the web root
 printf "\n\n${BLUE}----- Provision: Setup /var/www to point to /vagrant/Code ...${NC}\n\n"
-rm -rf /var/www # empty web root
-ln -fs /vagrant/Code /var/www # Link "Code" directory to webroot
-sudo ln -fs /var/log/*.log /vagrant/logs # Link server log to host log folder
-sudo ln -fs /var/log/apache2/*.log /vagrant/logs # Link server log to host log folder
+sudo mv /var/www/html/index.html /var/www
+# rm -rf /var/www # empty web root
+# ln -fs /vagrant/Code /var/www # Link "Code" directory to webroot
+# sudo ln -fs /var/log/*.log /vagrant/logs # Link server log to host log folder
+# sudo ln -fs /var/log/apache2/*.log /vagrant/logs # Link server log to host log folder
 
 # Apache / Virtual Host Setup
 printf "\n\n${BLUE}----- Provision: Install Host File...${NC}\n\n"

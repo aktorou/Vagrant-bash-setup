@@ -9,6 +9,7 @@ import rimraf   from 'rimraf';
 import sherpa   from 'style-sherpa';
 import yaml     from 'js-yaml';
 import fs       from 'fs';
+require('es6-promise').polyfill();
 
 // Load all Gulp plugins into one variable
 const $ = plugins();
@@ -26,11 +27,18 @@ function loadConfig() {
 
 // Build the "dist" folder by running all of the below tasks
 gulp.task('build',
- gulp.series(clean, gulp.parallel(pages, sass, javascript, images, copy), styleGuide));
+ gulp.series(clean, gulp.parallel(htaccess, setupIndex, pages, sass, javascript, images, copy)));
 
 // Build the site, run the server, and watch for file changes
 gulp.task('default',
   gulp.series('build', server, watch));
+
+
+
+gulp.slurped = false; // step 1
+
+
+// gulp.task("default", ["some-task", "another-task", "watch"]);
 
 // Delete the "dist" folder
 // This happens every time a build starts
@@ -42,40 +50,32 @@ function clean(done) {
 // This task skips over the "img", "js", and "scss" folders, which are parsed separately
 function copy() {
   return gulp.src(PATHS.assets)
-    .pipe(gulp.dest(PATHS.dist + '/assets'));
+    .pipe(gulp.dest(PATHS.dist + '/public/assets'));
 }
 
 // Copy page templates into finished HTML files
-function pages() {
-  return gulp.src('src/pages/**/*.{html,hbs,handlebars}')
-    .pipe(panini({
-      root: 'src/pages/',
-      layouts: 'src/layouts/',
-      partials: 'src/partials/',
-      data: 'src/data/',
-      helpers: 'src/helpers/'
-    }))
-    .pipe(gulp.dest(PATHS.dist));
-}
-
-// Load updated HTML templates and partials into Panini
-function resetPages(done) {
-  panini.refresh();
+function pages(done) {
+  gulp.src('src/app/**/*')
+  .pipe(gulp.dest(PATHS.dist + '/app'));
   done();
 }
 
-// Generate a style guide from the Markdown content and HTML template in styleguide/
-function styleGuide(done) {
-  sherpa('src/styleguide/index.md', {
-    output: PATHS.dist + '/styleguide.html',
-    template: 'src/styleguide/template.html'
-  }, done);
+function htaccess(done){
+  gulp.src('src/**/.htaccess')
+  .pipe(gulp.dest(PATHS.dist));
+  done();
+}
+
+function setupIndex(done){
+  gulp.src('src/public/index.php')
+  .pipe(gulp.dest(PATHS.dist + '/public'));
+  done();
 }
 
 // Compile Sass into CSS
 // In production, the CSS is compressed
 function sass() {
-  return gulp.src('src/assets/scss/app.scss')
+  return gulp.src('src/public/assets/scss/app.scss')
     .pipe($.sourcemaps.init())
     .pipe($.sass({
       includePaths: PATHS.sass
@@ -87,7 +87,7 @@ function sass() {
     .pipe($.if(PRODUCTION, $.uncss(UNCSS_OPTIONS)))
     .pipe($.if(PRODUCTION, $.cssnano()))
     .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
-    .pipe(gulp.dest(PATHS.dist + '/assets/css'))
+    .pipe(gulp.dest(PATHS.dist + '/public/assets/css'))
     .pipe(browser.reload({ stream: true }));
 }
 
@@ -102,34 +102,44 @@ function javascript() {
       .on('error', e => { console.log(e); })
     ))
     .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
-    .pipe(gulp.dest(PATHS.dist + '/assets/js'));
+    .pipe(gulp.dest(PATHS.dist + '/public/assets/js'));
 }
 
 // Copy images to the "dist" folder
 // In production, the images are compressed
 function images() {
-  return gulp.src('src/assets/img/**/*')
+  return gulp.src('src/public/assets/img/**/*')
     .pipe($.if(PRODUCTION, $.imagemin({
       progressive: true
     })))
-    .pipe(gulp.dest(PATHS.dist + '/assets/img'));
+    .pipe(gulp.dest(PATHS.dist + '/public/assets/img'));
 }
 
 // Start a server with BrowserSync to preview the site in
 function server(done) {
-  browser.init({
-    server: PATHS.dist, port: PORT
-  });
+  // browser.init({
+  //   server: PATHS.dist
+  // });
   done();
 }
 
+
 // Watch for changes to static assets, pages, Sass, and JavaScript
 function watch() {
+  // gulp.watch('../gulpfile.babel.js', gulp.build);
+
+  if(!gulp.slurped){ // step 2
+    
+    gulp.slurped = true; // step 3
+  }
+
+  gulp.watch("../*.js", gulp.parallel(clean, gulp.parallel(htaccess, setupIndex, pages, sass, javascript, images, copy)));
+
   gulp.watch(PATHS.assets, copy);
-  gulp.watch('src/pages/**/*.html', gulp.series(pages, browser.reload));
-  gulp.watch('src/{layouts,partials}/**/*.html', gulp.series(resetPages, pages, browser.reload));
-  gulp.watch('src/assets/scss/**/*.scss', sass);
-  gulp.watch('src/assets/js/**/*.js', gulp.series(javascript, browser.reload));
-  gulp.watch('src/assets/img/**/*', gulp.series(images, browser.reload));
-  gulp.watch('src/styleguide/**', gulp.series(styleGuide, browser.reload));
+  
+  gulp.watch('src/public/index.{php}', gulp.series(setupIndex));
+  gulp.watch('src/app/views/**/*.{html,phtml,php,volt}', gulp.series(pages, browser.reload));
+  gulp.watch('src/public/assets/scss/**/*.scss', sass);
+  gulp.watch('src/public/assets/js/**/*.js', gulp.series(javascript, browser.reload));
+  gulp.watch('src/public/assets/img/**/*', gulp.series(images, browser.reload));
 }
